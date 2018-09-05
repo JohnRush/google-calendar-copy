@@ -2,12 +2,9 @@
 Import events from one Google calendar to another.
 
 ### Overview
-This script imports events from one calander (external) into another (primary).
-Update the "settings" found below to make any changes you need.
-This does not copy all-day events, but it does work with recurring events.
-It will also update events that have changed and delete events that no longer exist.
+This script imports events from one calander (external) into another (primary). You can update the "settings" in the script file to make any changes you need. This does not copy all-day events, but it does work with recurring events. It will also update events that have changed and delete events that no longer exist.
 
-It uses to Google Calander GSuite Service found here:
+It uses to Google Calander GSuite Service API found here:
   https://developers.google.com/apps-script/reference/calendar/
 
 ### Installation and Setup
