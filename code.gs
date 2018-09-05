@@ -1,5 +1,6 @@
 // Author: John Rush (https://github.com/JohnRush)
 // License: MIT
+// Link: https://github.com/JohnRush/google-calendar-copy
 //
 // --Overview--
 // This script imports events from one calander (external) into another (primary).
@@ -24,7 +25,7 @@ function syncEmail() {
   const settings = {
     externalCalendarId: 'your_google_calendar_id_goes_here',
     daysToLookAhead: 60,  // how many days in advance to monitor and block off time
-    markPrivate: false, // Mark imported events as private?
+    markPrivate: true, // Mark imported events as private?
     appointmentTitle: 'Booked', // The name of events once they are imported (if not private)
     includeWeekends: false, // Include events that are on a weekend?
     keepReminders: false, // Do you want reminders to be added on your new imported events?
