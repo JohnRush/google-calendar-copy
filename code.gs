@@ -1,11 +1,10 @@
 // Author: John Rush (https://github.com/JohnRush)
 // License: MIT
-// Link: https://github.com/JohnRush/google-calendar-copy
 //
 // --Overview--
 // This script imports events from one calander (external) into another (primary).
 // Update the "settings" found below to make any changes you need.
-// This does not copy all-day events, but it does work with recurring events.
+// This does not copy all-day events, but it does work with recurring events.create.
 // It will also update events that have changed and delete events that no longer exist.
 //
 // It uses to Google Calander GSuite Service found here:
@@ -25,12 +24,13 @@ function syncEmail() {
   const settings = {
     externalCalendarId: 'your_google_calendar_id_goes_here',
     daysToLookAhead: 60,  // how many days in advance to monitor and block off time
-    markPrivate: true, // Mark imported events as private?
+    markPrivate: false, // Mark imported events as private?
     appointmentTitle: 'Booked', // The name of events once they are imported (if not private)
     includeWeekends: false, // Include events that are on a weekend?
     keepReminders: false, // Do you want reminders to be added on your new imported events?
     color: 0, // 0 gives the default color, or a pick number from 1 to 11 that corresponds to a color (https://developers.google.com/apps-script/reference/calendar/event-color)
-    removeAllImportedEvents: false // Delete all existing imported events (in case there is a problem)
+    removeAllImportedEvents: false, // Delete all existing imported events (in case there is a problem)
+    slowDownPlease: 100 // If you get "You have been creating or deleting too many calendars or calendar events in a short time." errors, you can increase this number of ms to wait
   };
   
   const ID_TAG = 'externalId';
@@ -99,6 +99,7 @@ function syncEmail() {
       // Create a new event
       var dayOfWeek = externalEvent.getStartTime().getDay();
       event = primaryCalendar.createEvent(desiredTitle, desiredStartTime, desiredEndTime);
+      if (settings.slowDownPlease) Utilities.sleep(settings.slowDownPlease);
       event.setTag(ID_TAG, externalId);
 
       // New events default to having reminders. Since we have reminders in the original
@@ -168,6 +169,7 @@ function syncEmail() {
   // This can happen when an item is moved to a different time or is just deleted
   primaryEvents.forEach(function(event) {
       event.deleteEvent();
+      if (settings.slowDownPlease) Utilities.sleep(settings.slowDownPlease);
       Logger.log('DEL ' + event.getTitle() + ' at ' + event.getStartTime());
   });
 }
