@@ -8,7 +8,7 @@
 // This does not copy all-day events, but it does work with recurring events.create.
 // It will also update events that have changed and delete events that no longer exist.
 //
-// It uses to Google Calander GSuite Service found here:
+// It uses to Google Calendar GSuite Service found here:
 //   https://developers.google.com/apps-script/reference/calendar/
 //
 // --Installation and Setup --
@@ -24,14 +24,14 @@
 function syncEmail() {
   const settings = {
     externalCalendarId: 'your_google_calendar_id_goes_here',
-    daysToLookAhead: 60,  // how many days in advance to monitor and block off time
-    markPrivate: true, // Mark imported events as private?
+    daysToLookAhead: 60, // how many days in advance to monitor and block off time
+    markPrivate: false, // Mark imported events as private?
     appointmentTitle: 'Booked', // The name of events once they are imported (if not private)
     includeWeekends: false, // Include events that are on a weekend?
     keepReminders: false, // Do you want reminders to be added on your new imported events?
     color: 0, // 0 gives the default color, or a pick number from 1 to 11 that corresponds to a color (https://developers.google.com/apps-script/reference/calendar/event-color)
     removeAllImportedEvents: false, // Delete all existing imported events (in case there is a problem)
-    slowDownPlease: 100 // If you get "You have been creating or deleting too many calendars or calendar events in a short time." errors, you can increase this number of ms to wait
+    slowDownPlease: 200 // If you get "You have been creating or deleting too many calendars or calendar events in a short time." errors, you can increase this number of ms to wait
   };
   
   const ID_TAG = 'externalId';
@@ -49,7 +49,7 @@ function syncEmail() {
   if (settings.removeAllImportedEvents) {
     primaryEvents.forEach(function(event) {
       event.deleteEvent();
-    });    
+    });
 
     Logger.log('Deleted ' + primaryEvents.length + ' imported event' + (primaryEvents.length === 1 ? '' : 's' ) + '.');
     return;
@@ -63,7 +63,7 @@ function syncEmail() {
   .filter(function(x) { return settings.includeWeekends || (x.getStartTime().getDay() >= 1 && x.getStartTime().getDay() <= 5); });
     Logger.log('Found ' + externalEvents.length + ' external event' + (primaryEvents.length === 1 ? '' : 's' ) + ' to process.');
 
-  // Go through each external event and add it if needed
+  // Go through each external event and add or update it, as needed
   externalEvents.forEach(function(externalEvent) {
     var externalId = externalEvent.getId();
     var existingEvents = primaryEvents.filter(function(x) {
@@ -76,7 +76,7 @@ function syncEmail() {
     var desiredColor = settings.color;
     var desiredStartTime = externalEvent.getStartTime();
     var desiredEndTime = externalEvent.getEndTime();
-    
+
     if (existingEvents.length > 1) {
       // We can reuse (update) a repeating sequence, but only if we find an exact match
       // for the time slot. If the time changes on the external event we will just create
@@ -85,14 +85,14 @@ function syncEmail() {
         return x.getStartTime().getTime() === desiredStartTime.getTime()
         && x.getEndTime().getTime() === desiredEndTime.getTime()
       });
-      
+
       if (perfectMatch.length === 1) {
         existingEvents = perfectMatch;
       } else {
         existingEvents = [];
       }
     }
-    
+
     var event = null;
     var isNew = existingEvents.length === 0;
 
@@ -116,44 +116,44 @@ function syncEmail() {
       var i = primaryEvents.indexOf(event);
       primaryEvents.splice(i, 1);
     }
-      
+
     var changes = [];
-    
+
     var setTime = false;
     if (event.getStartTime().getTime() !== desiredStartTime.getTime()) {
       changes.push('Changed start time to ' + desiredStartTime);
       setTime = true;
     }
-    
+
     if (event.getEndTime().getTime() !== desiredEndTime.getTime()) {
       changes.push('Changed end time to ' + desiredStartTime);
       setTime = true;
     }
-    
+
     if (setTime) {
       event.setTime(desiredStartTime, desiredEndTime);
     }
-    
+
     if (event.getVisibility() !== desiredVisbility) {
       event.setVisibility(desiredVisbility);
       changes.push('Changed visiblity to ' + (settings.markPrivate ? 'private' : 'public'));
     }
-    
+
     if (event.getTitle() !== desiredTitle) {
       event.setTitle(desiredTitle);
       changes.push('Changed title to "' + desiredTitle + '"');
     }
-    
+
     if (event.getDescription() !== desiredDescription) {
       event.setDescription(desiredDescription);
       changes.push('Changed description to "' + desiredDescription + '"');
     }
-    
+
     if (event.getColor() != desiredColor) {
       event.setColor(desiredColor);
       changes.push('Changed color to "' + desiredColor + '"');
     }
-    
+
     if (!isNew) {
       if (changes.length) {
         Logger.log('MOD ' + externalEvent.getTitle() + ' at ' + externalEvent.getStartTime());
@@ -165,7 +165,7 @@ function syncEmail() {
       }
     }
   });
-  
+
   // Anything left in primaryEvents will be an event that is no longer in the external calendar
   // This can happen when an item is moved to a different time or is just deleted
   primaryEvents.forEach(function(event) {
