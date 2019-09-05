@@ -5,7 +5,7 @@
 // --Overview--
 // This script imports events from one calander (external) into another (primary).
 // Update the "settings" found below to make any changes you need.
-// This does not copy all-day events, but it does work with recurring events.create.
+// This does not copy all-day events, but it does work with recurring events.
 // It will also update events that have changed and delete events that no longer exist.
 //
 // It uses to Google Calendar GSuite Service found here:
